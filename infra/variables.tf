@@ -23,6 +23,7 @@ variable "function_app_name" {
   default = "func-queimadas-pf0807"
 }
 
+
 variable "storage_account_name" {
   default = "stqueimadasfuncpf0807"
 }
