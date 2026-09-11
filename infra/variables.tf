@@ -23,9 +23,18 @@ variable "function_app_name" {
   default = "func-queimadas-pf0807"
 }
 
-
 variable "storage_account_name" {
   default = "stqueimadasfuncpf0807"
 }
 
+variable "acr_name" {
+  default = "acrqueimadaspf0807"
+}
 
+variable "aci_name" {
+  default = "aci-webapp-queimadas"
+}
+
+variable "webapp_image_tag" {
+  default = "latest"
+}

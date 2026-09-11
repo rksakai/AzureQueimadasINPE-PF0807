@@ -58,7 +58,14 @@ jobs:
         working-directory: infra
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -target=azurerm_resource_group.rg \
+            -target=azurerm_mysql_flexible_server.mysql \
+            -target=azurerm_mysql_flexible_database.db \
+            -target=azurerm_mysql_flexible_server_firewall_rule.allow_azure \
+            -target=azurerm_storage_account.func_storage \
+            -target=azurerm_service_plan.func_plan \
+            -target=azurerm_linux_function_app.func
 
       - name: Wait for Function App to be available
         run: |

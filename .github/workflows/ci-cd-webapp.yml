@@ -1,0 +1,72 @@
+name: CI/CD - WebApp (Dia 2)
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths: [ 'webapp/**', 'infra/acr.tf', 'infra/aci.tf' ]
+  push:
+    branches: [ main ]
+    paths: [ 'webapp/**', 'infra/acr.tf', 'infra/aci.tf' ]
+
+env:
+  TF_VAR_mysql_admin_password: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
+
+jobs:
+  build-validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build imagem (validacao)
+        working-directory: webapp
+        run: docker build -t webapp-queimadas:ci .
+
+  ensure-acr-and-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Apply (garante que o ACR existe)
+        working-directory: infra
+        run: |
+          terraform init
+          terraform apply -auto-approve -target=azurerm_container_registry.acr
+
+      - name: ACR Login
+        run: az acr login --name acrqueimadaspf0807
+
+      - name: Build e Push da imagem
+        working-directory: webapp
+        run: |
+          docker build -t acrqueimadaspf0807.azurecr.io/webapp-queimadas:${{ github.sha }} .
+          docker build -t acrqueimadaspf0807.azurecr.io/webapp-queimadas:latest .
+          docker push acrqueimadaspf0807.azurecr.io/webapp-queimadas:${{ github.sha }}
+          docker push acrqueimadaspf0807.azurecr.io/webapp-queimadas:latest
+
+      - name: Terraform Apply (cria/atualiza o ACI)
+        working-directory: infra
+        run: terraform apply -auto-approve
+
+      - name: Verificar aplicacao publicada
+        run: |
+          FQDN=$(az container show \
+            --name aci-webapp-queimadas \
+            --resource-group rg-monitor-queimadas \
+            --query ipAddress.fqdn -o tsv)
+          echo "Aguardando aplicacao responder em http://$FQDN:8080 ..."
+          for i in $(seq 1 10); do
+            if curl -sf "http://$FQDN:8080/health"; then
+              echo "Aplicacao respondendo com sucesso."
+              break
+            fi
+            sleep 10
+          done
