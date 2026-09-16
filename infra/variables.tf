@@ -38,3 +38,7 @@ variable "aci_name" {
 variable "webapp_image_tag" {
   default = "latest"
 }
+
+variable "teste" {
+  default = "teste"
+}
