@@ -6,6 +6,10 @@ variable "resource_group_name" {
   default = "rg-monitor-queimadas"
 }
 
+variable "mysql_server_name" {
+  default = "mysql-server-fiap-pf0807"
+}
+
 variable "mysql_admin_user" {
   default = "adminuser"
 }
