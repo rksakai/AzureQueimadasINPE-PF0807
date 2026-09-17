@@ -25,7 +25,7 @@ resource "azurerm_mysql_flexible_database" "db" {
 
 # Regra que libera qualquer IP (não recomendado para produção)
 resource "azurerm_mysql_flexible_server_firewall_rule" "allow_all" {
-  name                = "AllowAllIPs"
+  name                = "AllowAllIP"
   resource_group_name = azurerm_resource_group.rg.name
   server_name         = azurerm_mysql_flexible_server.mysql.name
 
