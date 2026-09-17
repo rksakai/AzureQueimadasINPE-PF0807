@@ -10,6 +10,10 @@ variable "mysql_server_name" {
   default = "mysql-server-fiap-pf0807"
 }
 
+variable "mysql_location" {
+  default = "denmarkeast"
+}
+
 variable "mysql_admin_user" {
   default = "adminuser"
 }
