@@ -14,11 +14,3 @@ resource "azurerm_databricks_workspace" "this" {
     Environment = var.environment
   }
 }
-
-output "databricks_workspace_url" {
-  value = azurerm_databricks_workspace.this.workspace_url
-}
-
-output "databricks_workspace_id" {
-  value = azurerm_databricks_workspace.this.workspace_id
-}
