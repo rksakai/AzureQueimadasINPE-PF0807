@@ -3,18 +3,58 @@ name: Deploy Databricks Workspace
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "infra/**"
+    inputs:
+      action:
+        description: 'Acao a executar: plan (somente visualizar) ou apply (criar/atualizar workspace e cluster)'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+      confirm:
+        description: 'Para action=apply, digite "apply" para confirmar a aplicacao dos recursos'
+        required: false
+
+env:
+  TF_VAR_mysql_admin_password: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  terraform-apply:
+  # ---------- PLAN ----------
+
+  terraform-plan:
+    if: github.event.inputs.action == 'plan'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+  # ---------- APPLY ----------
+
+  terraform-apply:
+    if: github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'apply'
+    runs-on: ubuntu-latest
+    environment: producao-apply
     defaults:
       run:
         working-directory: infra
@@ -43,8 +83,10 @@ jobs:
           echo "workspace_url=$(terraform output -raw databricks_workspace_url)" >> "$GITHUB_OUTPUT"
 
   wait-workspace-ready:
+    if: github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'apply'
     needs: terraform-apply
     runs-on: ubuntu-latest
+    environment: producao-apply
     steps:
       - name: Azure Login
         uses: azure/login@v1
@@ -68,8 +110,10 @@ jobs:
           exit 1
 
   configure-cluster:
+    if: github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'apply'
     needs: wait-workspace-ready
     runs-on: ubuntu-latest
+    environment: producao-apply
     defaults:
       run:
         working-directory: infra
