@@ -1,12 +1,19 @@
 name: CI/CD - Infra e Function (Dia 1)
 
 on:
-  pull_request:
-    branches: [main]
-    paths: ['infra/**', 'function/**']
-  push:
-    branches: [main]
-    paths: ['infra/**', 'function/**']
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Acao a executar: plan (somente visualizar) ou apply (aplicar infra e fazer deploy da Function)'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+      confirm:
+        description: 'Para action=apply, digite "apply" para confirmar a aplicacao dos recursos'
+        required: false
 
 env:
   TF_VAR_mysql_admin_password: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
@@ -17,7 +24,7 @@ permissions:
 
 jobs:
   terraform-plan:
-    if: github.event_name == 'pull_request'
+    if: github.event.inputs.action == 'plan'
     runs-on: ubuntu-latest
 
     defaults:
@@ -41,8 +48,9 @@ jobs:
         run: terraform plan
 
   terraform-apply-and-deploy:
-    if: github.event_name == 'push'
+    if: github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'apply'
     runs-on: ubuntu-latest
+    environment: producao-apply
 
     steps:
       - uses: actions/checkout@v4
