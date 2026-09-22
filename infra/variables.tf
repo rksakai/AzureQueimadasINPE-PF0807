@@ -47,6 +47,10 @@ variable "webapp_image_tag" {
   default = "latest"
 }
 
-variable "teste" {
-  default = "teste"
+variable "sufix" {
+  default = "pf0807"
+}
+
+variable "environment" {
+  default = "Desenvolvimento"
 }

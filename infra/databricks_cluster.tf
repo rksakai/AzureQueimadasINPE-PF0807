@@ -9,7 +9,7 @@ data "databricks_spark_version" "latest_lts" {
 }
 
 resource "databricks_cluster" "etl" {
-  cluster_name            = "${var.prefix}-etl-cluster"
+  cluster_name            = "etl-cluster-${var.sufix}"
   spark_version           = data.databricks_spark_version.latest_lts.id
   node_type_id            = data.databricks_node_type.smallest.id
   autotermination_minutes = 20
@@ -24,7 +24,7 @@ resource "databricks_cluster" "etl" {
   }
 
   custom_tags = {
-    Project = var.prefix
+    Project = var.sufix
   }
 }
 
