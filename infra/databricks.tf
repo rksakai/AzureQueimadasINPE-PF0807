@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "databricks" {
   name     = "rg-databricks-${var.sufix}"
-  location = var.location
+  location = var.databricks_location
 }
 
 resource "azurerm_databricks_workspace" "this" {
@@ -8,7 +8,7 @@ resource "azurerm_databricks_workspace" "this" {
   resource_group_name         = azurerm_resource_group.databricks.name
   location                    = azurerm_resource_group.databricks.location
   sku                         = "premium" # ou "standard" se não precisar de CMK/compliance
-  managed_resource_group_name = "rg--databricks-managed-${var.sufix}"
+  managed_resource_group_name = "rg-databricks-managed-${var.sufix}"
 
   tags = {
     Environment = var.environment
