@@ -170,7 +170,8 @@ jobs:
 
       - name: Terraform Apply (cria/atualiza o ACI)
         working-directory: infra
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve -target=azurerm_container_group.webapp
 
       - name: Verificar aplicacao publicada
         run: |
